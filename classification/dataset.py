@@ -20,7 +20,7 @@ class HealthData(Dataset):
         
         inputs, targets = data.drop(['학교명'], axis=1).to_numpy(), data['학교명'].to_numpy()
         
-        return torch.tensor(inputs), torch.tensor(targets)
+        return torch.tensor(inputs, dtype=torch.float32), torch.tensor(targets, dtype=torch.long)
     
     def __len__(self):
         return len(self.inputs)
