@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch
 
 
@@ -36,3 +37,12 @@ def evaluate(model, val_loader, criterion, device):
             val_epoch_loss += loss.item()
     
     return val_epoch_loss/len(val_loader)
+
+
+def plot_loss(train_losses, val_losses):
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.plot(train_losses, 'red', label='train')
+    plt.plot(val_losses, 'blue', label='val')
+    plt.legend()
+    plt.show()
