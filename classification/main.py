@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
 
-from dataset import HealthData
+from dataset import HealthData, IrisData
 from models import FeedForward
 from utils import evaluate, train, plot_graph, EarlyStopping
 
@@ -12,13 +12,17 @@ TEST_RATIO = 0.8
 NUM_EPOCHS = 1000
 
 
-dataset = HealthData()
+# dataset = HealthData()
+dataset = IrisData()
+
 train_data, val_data = random_split(dataset, (int(len(dataset)*TEST_RATIO), len(dataset) - int(len(dataset)*TEST_RATIO)))
 
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
 
-model = FeedForward().to(DEVICE)
+# model = FeedForward().to(DEVICE)
+model = FeedForward(in_features=4, out_features=3, dropout=0.5).to(DEVICE)
+
 criterion = nn.NLLLoss()
 optimizer = torch.optim.Adam(model.parameters())
 
