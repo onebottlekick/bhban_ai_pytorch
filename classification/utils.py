@@ -24,7 +24,7 @@ def train(model, train_loader, optimizer, criterion, device):
         train_epoch_loss += loss.item()
         train_epoch_acc += (pred.argmax(dim=-1) == targets).sum().item()
     
-    return train_epoch_loss/len(train_loader.dataset), train_epoch_acc/len(train_loader.dataset)*100
+    return train_epoch_loss/len(train_loader), train_epoch_acc/len(train_loader.dataset)*100
 
 
 def evaluate(model, val_loader, criterion, device):
@@ -43,7 +43,7 @@ def evaluate(model, val_loader, criterion, device):
             val_epoch_loss += loss.item()
             val_epoch_acc += (pred.argmax(dim=-1) == targets).sum().item()
     
-    return val_epoch_loss/len(val_loader.dataset), val_epoch_acc/len(val_loader.dataset)*100
+    return val_epoch_loss/len(val_loader), val_epoch_acc/len(val_loader.dataset)*100
 
 
 def plot_graph(train_losses, val_losses, train_accs, val_accs):
