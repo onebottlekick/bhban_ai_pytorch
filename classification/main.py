@@ -37,11 +37,15 @@ for epoch in range(NUM_EPOCHS):
     val_losses.append(val_loss)
     val_accs.append(val_acc)
     
-    print(f'Epoch {epoch+1:02}')
+    print('-'*30)
+    print(f'Epoch [{epoch+1:02}/{NUM_EPOCHS}]')
+    print()
     print(f'Train Loss: {train_loss:.3f}, Train Acc: {train_acc:.2f}')
     print(f'Val Loss: {val_loss:.3f}, Val Acc: {val_acc:.2f}')
+
     
     early_stopping(val_loss, model)
+    print('-'*30)
     if early_stopping.early_stop:
         print('Early stopping')
         break
