@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, random_split
 
 from dataset import HealthData
 from models import FeedForward
-from utils import evaluate, train, plot_loss, EarlyStopping
+from utils import evaluate, train, plot_graph, EarlyStopping
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 32
@@ -25,20 +25,25 @@ optimizer = torch.optim.Adam(model.parameters())
 early_stopping = EarlyStopping(verbose=True)
 
 train_losses = []
+train_accs = []
 val_losses = []
+val_accs = []
 for epoch in range(NUM_EPOCHS):
-    train_loss = train(model, train_loader, optimizer, criterion, DEVICE)
+    train_loss, train_acc = train(model, train_loader, optimizer, criterion, DEVICE)
     train_losses.append(train_loss)
-    val_loss = evaluate(model, val_loader, criterion, DEVICE)
+    train_accs.append(train_acc)
+    
+    val_loss, val_acc = evaluate(model, val_loader, criterion, DEVICE)
     val_losses.append(val_loss)
+    val_accs.append(val_acc)
     
     print(f'Epoch {epoch+1:02}')
-    print(f'\tTrain Loss: {train_loss:.3f}')
-    print(f'\tVal Loss: {val_loss:.3f}')
+    print(f'Train Loss: {train_loss:.3f}, Train Acc: {train_acc:.2f}')
+    print(f'Val Loss: {val_loss:.3f}, Val Acc: {val_acc:.2f}')
     
     early_stopping(val_loss, model)
     if early_stopping.early_stop:
         print('Early stopping')
         break
     
-plot_loss(train_losses, val_losses)
+plot_graph(train_losses, val_losses, train_accs, val_accs)
