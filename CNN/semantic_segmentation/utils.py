@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from IPython import display
+from tqdm import tqdm
 
 
 def train(model, train_loader, optimizer, criterion, device):
@@ -62,6 +63,13 @@ def plot(img, train_losses, val_losses):
 
         plt.pause(0.1)
 
+
+class DownloadProgressBar(tqdm):
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b*bsize - self.n)
+        
 
 class EarlyStopping:
     def __init__(self, patience=10, verbose=False, delta=0, save_path='checkpoints/cp.pt'):
