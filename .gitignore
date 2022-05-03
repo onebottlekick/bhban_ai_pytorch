@@ -2,3 +2,5 @@ test.*
 __pycache__/
 checkpoints/
 CNN/semantic_segmentation/data/
+CNN/gan/data/
+CNN/gan/results/
