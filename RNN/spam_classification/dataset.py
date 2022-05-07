@@ -42,7 +42,7 @@ class SpamDataset(Dataset):
                 sentence, label = (line.split('\t')[1].strip()), line.split('\t')[0]
                 sentence = [token.text for token in self.tokenizer(sentence)]
                 sentences.append(sentence)
-                labels.append(0 if label == 'ham' else 1)
+                labels.append([0.0] if label == 'ham' else [1.0])
         self._build_vocab(sentences, self.vocabulary)
         
         # sentences = [[self.vocabulary.t2i[token] for token in sentence] for sentence in sentences]
