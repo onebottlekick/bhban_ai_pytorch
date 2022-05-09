@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
 
 from dataset import SpamDataset
-from model import Model
+from model import Model, LSTM
 from utils import EarlyStopping, evaluate, train, plot_graph
 
 
@@ -18,7 +18,8 @@ train_data, val_data = random_split(dataset, (int(len(dataset)*TEST_RATIO), len(
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
 
-model = Model(len(dataset.vocabulary.t2i)).to(DEVICE)
+# model = Model(len(dataset.vocabulary.t2i)).to(DEVICE)
+model = LSTM(len(dataset.vocabulary.t2i)).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters())
 criterion = nn.BCELoss()
 
