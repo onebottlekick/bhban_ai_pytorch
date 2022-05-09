@@ -26,9 +26,9 @@ val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
 
 model = UNet().to(DEVICE)
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
-early_stopping = EarlyStopping(verbose=True)
+early_stopping = EarlyStopping(verbose=True, save_path='checkpoints/model.pt')
 
 train_losses = []
 val_losses = []
