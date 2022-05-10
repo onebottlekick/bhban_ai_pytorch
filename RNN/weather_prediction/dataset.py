@@ -26,8 +26,8 @@ class WeatherDataset(Dataset):
         X = []
         y = []        
         for i in range(len(array)-self.window_size*2 + 1):
-            X.append(torch.tensor(array[i:i+self.window_size]))
-            y.append(torch.tensor(array[i+self.window_size:i+self.window_size*2]))
+            X.append(torch.tensor(array[i:i+self.window_size], dtype=torch.float32))
+            y.append(torch.tensor(array[i+self.window_size:i+self.window_size*2], dtype=torch.float32))
         
         return X, y
     
@@ -36,3 +36,8 @@ class WeatherDataset(Dataset):
     
     def __getitem__(self, idx):
         return self.inputs[idx], self.targets[idx]
+    
+    
+if __name__ == '__main__':
+    dataset = WeatherDataset()
+    print(dataset[0][0].shape)
