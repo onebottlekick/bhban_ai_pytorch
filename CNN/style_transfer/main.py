@@ -1,59 +1,76 @@
 import os
 
 import torch
+import torch.nn as nn
 from torchvision import transforms
-from torchvision.utils import save_image
 
-from models import VGG
-from utils import load_img, plot, img2gif
+from models import StyleTransfer
+from utils import gram_matrix, load_img, plot
 
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model = VGG().to(device)
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-content_img = load_img('content.jpg', device=device)
-style_img = load_img('style.jpg', device=device)
-style_img = transforms.Resize(content_img.shape[2:])(style_img)
+style_transfer = StyleTransfer(DEVICE)
+model = style_transfer.model
+layers = style_transfer.layers
+conv_idx = style_transfer.conv_idx
 
-transfered = content_img.clone().requires_grad_(True)
+content_path = os.path.join('samples', 'content.jpg')
+style_path = os.path.join('samples', 'style.jpg')
 
-num_epochs = 400
-learning_rate = 0.001
+resize = 500
+transform = transforms.Compose([
+    transforms.Resize(resize),
+    transforms.ToTensor(),
+    # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
 
-alpha = 1
-beta = 0.01
+content = load_img(content_path, transform, DEVICE).unsqueeze(0)
+style = load_img(style_path, transform, DEVICE).unsqueeze(0)
 
-optimizer = torch.optim.Adam([transfered], lr=learning_rate)
+noise = torch.rand(content.shape, device=DEVICE, requires_grad=True)
 
-losses = []
-for epoch in range(1, num_epochs + 1):
+NUM_EPOCHS = 500
+learning_rate = 0.1
+alpha = 1e+0
+beta = 1e+4
+
+optimizer = torch.optim.Adam([noise], lr=learning_rate)
+criterion = nn.MSELoss()
+
+content_losses = []
+style_losses = []
+total_losses = []
+for epoch in range(NUM_EPOCHS):
     optimizer.zero_grad()
-    
-    transfered_feartures = model(transfered)
-    content_features = model(content_img)
-    style_features = model(style_img)
-    
-    content_loss = 0
     style_loss = 0
+    content_loss = 0
     
-    for transfered_fearture, content_feature, style_feature in zip(transfered_feartures, content_features, style_features):
-        N, C, H, W = transfered_fearture.shape
-        
-        content_loss += torch.mean((transfered_fearture - content_feature)**2)
-        
-        G = transfered_fearture.view(C, H*W).mm(transfered_fearture.view(C, H*W).t())
-        A = style_feature.view(C, H*W).mm(style_feature.view(C, H*W).t())
-        style_loss += torch.mean((G - A)**2)
-        
+    noise.data.clip_(0, 1)
+    for idx in layers.keys():
+        if 'c' in layers[idx]:
+            target_content = model[:conv_idx[idx]+1](content).detach()
+            noise_content = model[:conv_idx[idx]+1](noise)
+            content_loss += criterion(noise_content, target_content)
+        if 's' in layers[idx]:
+            target_style = gram_matrix(model[:conv_idx[idx]+1](style)).detach()
+            noise_style = gram_matrix(model[:conv_idx[idx]+1](noise))
+            style_loss += criterion(noise_style, target_style)
+            
+    content_losses.append(content_loss.item())
+    style_losses.append(style_loss.item())
+    
     total_loss = alpha*content_loss + beta*style_loss
+    total_losses.append(total_loss.item())
     total_loss.backward()
     optimizer.step()
     
-    losses.append(total_loss.item())
-    plot(transfered.detach().cpu().squeeze(0).permute(1, 2, 0).numpy(), losses)
-    
-    if epoch%5 == 0:
-        os.makedirs('results', exist_ok=True)
-        save_image(transfered, os.path.join('results', f'transfered_epoch[{epoch}].png'))
-
-img2gif(remove_imgs=True)
+    print(f'Epoch [{epoch+1:02}/{NUM_EPOCHS}] content_loss={content_loss:6f}, style_loss={style_loss:.6f}, total_loss={total_loss:.6f}')
+    plot(
+        content.squeeze(0).cpu().detach().numpy().transpose(1, 2, 0),
+        style.squeeze(0).cpu().detach().numpy().transpose(1, 2, 0),
+        noise.data.clip_(0, 1).squeeze(0).cpu().detach().numpy().transpose(1, 2, 0),
+        content_losses,
+        style_losses,
+        total_losses
+    )
