@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import imageio
 import matplotlib.pyplot as plt
@@ -21,40 +22,48 @@ def gram_matrix(x):
     return gram/(2*N*C*H*W)
 
 
-def plot(content, style, noise, content_losses, style_losses, total_losses):
-    with plt.ion():
-        display.clear_output(wait=True)
-        display.display(plt.gcf())
-        plt.clf()
-        
-        plt.subplot(2, 2, 1)
+def plot(content, style, noise, content_losses, style_losses, total_losses, savefig=False):
+    if savefig:
+        os.makedirs('results', exist_ok=True)
         plt.axis('off')
-        plt.title('Content')
-        plt.imshow(content)
-        
-        plt.subplot(2, 2, 2)
-        plt.axis('off')
-        plt.title('Style')
-        plt.imshow(style)
-        
-        plt.subplot(2, 2, 3)
-        plt.axis('off')
-        plt.title('Noise')
         plt.imshow(noise)
+        plt.savefig(os.path.join('results', datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')+'.png'), bbox_inches='tight', pad_inches=0)
+    
+    else:
+        with plt.ion():
+            display.clear_output(wait=True)
+            display.display(plt.gcf())
+            plt.clf()
 
-        plt.subplot(2, 2, 4)
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.plot(content_losses, label='content')
-        plt.text(len(content_losses) - 1, content_losses[-1], str(content_losses[-1]))
-        plt.plot(style_losses, label='style')
-        plt.text(len(style_losses) - 1, style_losses[-1], str(style_losses[-1]))
-        # plt.plot(total_losses, label='total', color='red')
-        # plt.text(len(total_losses) - 1, total_losses[-1], str(total_losses[-1]))
-        plt.legend()
-        plt.show()
+            plt.subplot(2, 2, 1)
+            plt.axis('off')
+            plt.title('Content')
+            plt.imshow(content)
 
-        plt.pause(0.1)
+            plt.subplot(2, 2, 2)
+            plt.axis('off')
+            plt.title('Style')
+            plt.imshow(style)
+
+            plt.subplot(2, 2, 3)
+            plt.axis('off')
+            plt.title('Noise')
+            plt.imshow(noise)
+
+            plt.subplot(2, 2, 4)
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss')
+            plt.plot(content_losses, label='content')
+            plt.text(len(content_losses) - 1, content_losses[-1], str(content_losses[-1]))
+            plt.plot(style_losses, label='style')
+            plt.text(len(style_losses) - 1, style_losses[-1], str(style_losses[-1]))
+            # plt.plot(total_losses, label='total', color='red')
+            # plt.text(len(total_losses) - 1, total_losses[-1], str(total_losses[-1]))
+            plt.legend()
+            
+            plt.show()
+
+            plt.pause(0.1)
         
         
 def img2gif(root='results', to='result.gif', remove_imgs=False, duration=0.5):
