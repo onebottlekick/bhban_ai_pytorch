@@ -12,6 +12,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 style_transfer = StyleTransfer(DEVICE)
 model = style_transfer.model
+
 layers = style_transfer.layers
 conv_idx = style_transfer.conv_idx
 
@@ -21,8 +22,7 @@ style_path = os.path.join('samples', 'style.jpg')
 resize = (480, 640)
 transform = transforms.Compose([
     transforms.Resize(resize),
-    transforms.ToTensor(),
-    # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.ToTensor()
 ])
 
 content = load_img(content_path, transform, DEVICE).unsqueeze(0)
@@ -30,12 +30,10 @@ style = load_img(style_path, transform, DEVICE).unsqueeze(0)
 
 noise = torch.rand(content.shape, device=DEVICE, requires_grad=True)
 
-NUM_EPOCHS = 250
-# learning_rate = 0.1
+NUM_EPOCHS = 300
 alpha = 1e+0
-beta = 1e7
+beta = 1e+6
 
-# optimizer = torch.optim.Adam([noise], lr=learning_rate)
 optimizer = torch.optim.LBFGS([noise], max_iter=1)
 criterion = nn.MSELoss()
 
@@ -51,12 +49,12 @@ for epoch in range(NUM_EPOCHS):
             noise.data.clip_(0, 1)
         for idx in layers.keys():
             if 'c' in layers[idx]:
-                target_content = model[:conv_idx[idx]+1](content).detach()
-                noise_content = model[:conv_idx[idx]+1](noise)
+                target_content = model[:conv_idx[idx]+2](content).detach()
+                noise_content = model[:conv_idx[idx]+2](noise)
                 content_loss += criterion(noise_content, target_content)
             if 's' in layers[idx]:
-                target_style = gram_matrix(model[:conv_idx[idx]+1](style)).detach()
-                noise_style = gram_matrix(model[:conv_idx[idx]+1](noise))
+                target_style = gram_matrix(model[:conv_idx[idx]+2](style)).detach()
+                noise_style = gram_matrix(model[:conv_idx[idx]+2](noise))
                 style_loss += criterion(noise_style, target_style)
 
         content_losses.append(content_loss.item())
